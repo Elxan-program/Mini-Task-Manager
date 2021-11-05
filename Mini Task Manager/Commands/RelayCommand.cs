@@ -7,29 +7,35 @@ using System.Windows.Input;
 
 namespace Mini_Task_Manager.Commands
 {
-	class RelayCommand : ICommand
+	public class RelayCommand : ICommand
 	{
-		event EventHandler ICommand.CanExecuteChanged
-		{
-			add
-			{
-				throw new NotImplementedException();
-			}
+        public event EventHandler CanExecuteChanged
+        {
+            add { CommandManager.RequerySuggested += value; }
+            remove { CommandManager.RequerySuggested -= value; }
+        }
 
-			remove
-			{
-				throw new NotImplementedException();
-			}
-		}
+        private Action<object> _execute;
+        private Predicate<object> _canExecute;
 
-		bool ICommand.CanExecute(object parameter)
-		{
-			throw new NotImplementedException();
-		}
+        public RelayCommand(Action<object> execute, Predicate<object> canExecute = null)
+        {
+            if (execute == null)
+            {
+                throw new NullReferenceException();
+            }
+            _execute = execute;
+            _canExecute = canExecute;
+        }
 
-		void ICommand.Execute(object parameter)
-		{
-			throw new NotImplementedException();
-		}
-	}
+        public bool CanExecute(object parameter)
+        {
+            return _canExecute == null ? true : _canExecute(parameter);
+        }
+
+        public void Execute(object parameter)
+        {
+            _execute.Invoke(parameter);
+        }
+    }
 }
